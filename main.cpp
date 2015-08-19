@@ -16,7 +16,7 @@ using namespace std;
 using namespace boost::posix_time;
 
 
-#include <cppad/cg/cppadcg.hpp>
+//#include <cppad/cg/cppadcg.hpp>
 #include <cppad/cppad.hpp>
 #include <cppad/ipopt/solve.hpp>
 //#include <cppad/ipopt/solve_callback.hpp>
@@ -136,7 +136,7 @@ AD<double> energy(/*int i, int n,*/ vector<AD<double>>& fin) {//, vector<SX>& J,
     double U0 = 1;
 //    vector<double> dU(L, 0);//.01);
 //    double mu = 0.5;
-    double theta = 0.01;
+    double theta = 0;
     
 //    vector<double> dU({-0.062495818684028,-0.240152540894773,-0.245433857301291,-0.273625816197061,-0.242270144341017,-0.27259078540955,-0.20204475712817,-0.0848398286345957,0.424865322680541,-0.0971718211590916,-0.129687170384589,-0.271703531802801,0.0948468516335159,-0.117917878473979,-0.0135564488854456,0.419054844730518,-0.108478764896881,-0.216038019921792,0.260931974004009,-0.202439024332201,0.187098382438594,-0.183422731248427,-0.146060037885631,-0.156016398905386,-0.183701971564288});
 //    vector<double> J({0.138152396495495,0.140219774273089,0.140581397909088,0.140546956950688,0.140535853601678,0.140093899853519,0.138001669064538,0.129914946537351,0.13004950249811,0.137341045165717,0.139269569050823,0.136554490078846,0.134896150878805,0.136228606430583,0.129211199655538,0.130262768487484,0.138427531129939,0.133745485153161,0.13360220926095,0.134615642880126,0.134412331368716,0.138498071670926,0.138193037947643,0.138613245204837,0.137539881531959});
@@ -637,7 +637,7 @@ int main(int argc, char** argv) {
     cout << solution.obj_value << endl;
     cout << solution.status << endl;
     for(int i = 0; i < L; i++) {
-        cout << norm(i, solution.x) << endl;
+//        cout << norm(i, solution.x) << endl;
     }
     
     std::vector<double> norms(L);
@@ -656,7 +656,7 @@ int main(int argc, char** argv) {
     fg_eval(fg, xnorm);
     cout << fg[0] << endl;
     for(int i = 0; i < L; i++) {
-        cout << norm(i, xnorm) << endl;
+//        cout << norm(i, xnorm) << endl;
     }
 
     /*using namespace CppAD;
