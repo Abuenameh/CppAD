@@ -26,7 +26,7 @@ using CppAD::AD;
 typedef CppAD::AD<double> Scalar;
 
 const int L = 50;
-const int nmax = 3;
+const int nmax = 5;
 const int dim = nmax + 1;
 
 template<class T>
@@ -463,6 +463,7 @@ typedef CppAD::AD<complex<double>> ADc;
 		{	
         ptime begin = microsec_clock::local_time();
             fg[0] = energy(const_cast<ADvector&>(x));
+            cout << fg[0] << endl;
         ptime end = microsec_clock::local_time();
         time_period period(begin, end);
         cout << endl << period.length() << endl << endl;
@@ -488,8 +489,8 @@ int main(int argc, char** argv) {
 	// number of constraints (range dimension for g)
 	size_t ng = L;
 	// initial value of the independent variables
-	Dvector xi(nx, 1.0);
-    Dvector xii({-6.79045819393098e-9,7.71152338744772e-9,0.707106781186545,0.707106781186545,
+//	Dvector xi(nx, 1.0);
+    Dvector xi({-6.79045819393098e-9,7.71152338744772e-9,0.707106781186545,0.707106781186545,
    -6.63442720769046e-8,-3.48016745636222e-8,-2.45211700986609e-8,1.9287403708982e-10,
    2.49691469412262e-13,6.11976813244223e-14,1.85148291581534e-9,1.45525846918271e-9,
    -2.19595679203122e-8,-7.19724930329616e-8,0.672114580890689,0.740447155544597,1.5995539027605e-7,
@@ -741,24 +742,25 @@ int main(int argc, char** argv) {
 	// options 
 	std::string options;
 	// turn off any printing
-	options += "Integer print_level  0\n"; 
+//	options += "Integer print_level  0\n"; 
 	options += "String  sb           yes\n";
 	// maximum number of iterations
-	options += "Integer max_iter     100\n";
+	options += "Integer max_iter     1000\n";
 	// approximate accuracy in first order necessary conditions;
 	// see Mathematical Programming, Volume 106, Number 1, 
 	// Pages 25-57, Equation (6)
-	options += "Numeric tol          1e-6\n";
+	options += "Numeric tol          1e-12\n";
+	options += "Numeric acceptable_tol          1e-12\n";
 	// derivative testing
 //	options += "String  derivative_test            second-order\n";
 	// maximum amount of random pertubation; e.g., 
 	// when evaluation finite diff
 	options += "Numeric point_perturbation_radius  0.\n";
     
-    options += "String hessian_approximation limited-memory\n";
+//    options += "String hessian_approximation limited-memory\n";
 //    options += "String hessian_approximation exact\n";
     
-    options += "String linear_solver ma86\n";
+    options += "String linear_solver ma97\n";
 
 	// place to return solution
 	CppAD::ipopt::solve_result<Dvector> solution;
