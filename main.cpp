@@ -26,7 +26,7 @@ using CppAD::AD;
 typedef CppAD::AD<double> Scalar;
 
 const int L = 50;
-const int nmax = 5;
+const int nmax = 6;
 const int dim = nmax + 1;
 
 template<class T>
