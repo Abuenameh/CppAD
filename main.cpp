@@ -611,6 +611,8 @@ int main(int argc, char** argv) {
         lopt.set_lower_bounds(-1);
         lopt.set_upper_bounds(1);
         lopt.set_min_objective(energyfunc, &zx);
+        lopt.set_ftol_rel(1e-16);
+        lopt.set_ftol_abs(1e-16);
         
         double E0;
         std::vector<double> x(ndim, 1);
