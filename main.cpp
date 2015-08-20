@@ -603,9 +603,14 @@ size_t thread_num() {
 
 double energyfunc(const std::vector<double>& x, std::vector<double>& grad, void* data) {
     CppAD::ADFun<double>* func = static_cast<CppAD::ADFun<double>*>(data);
-    grad = func->Jacobian(x);
-    cout << func->Forward(0, x)[0] << endl;
-    return func->Forward(0, x)[0];
+    CppAD::vector<double> cppx(x.size());
+    for (int i = 0; i < x.size(); i++) {
+        cppx[i] = x[i];
+    }
+    CppAD::vector<double> cppgrad = func->Jacobian(cppx);
+    copy(cppgrad.data(), cppgrad.data()+grad.size(), grad.begin());
+    cout << func->Forward(0, cppx)[0] << endl;
+    return func->Forward(0, cppx)[0];
 }
 
 void thread_func2(int i) {
@@ -614,7 +619,7 @@ void thread_func2(int i) {
 
     CppAD::vector<CppAD::AD<double>> qw(2*L*dim);
     for(int i = 0; i < 2*L*dim; i++) {
-        qw[i] = xc[i];
+        qw[i] = 1;
     }
     CppAD::Independent(qw);
     FG_eval fge;
@@ -657,23 +662,23 @@ int main(int argc, char** argv) {
     thread_alloc::parallel_setup(3, in_parallel, thread_num);
     thread_alloc::hold_memory(true);
     CppAD::parallel_ad<double>();
-//    CppAD::CheckSimpleVector<size_t, CppAD::vector<size_t>>();
-//    CppAD::CheckSimpleVector<set<size_t>, CppAD::vector<set<size_t>>>(CppAD::one_element_std_set<size_t>(), CppAD::two_element_std_set<size_t>());
+    CppAD::CheckSimpleVector<size_t, CppAD::vector<size_t>>();
+    CppAD::CheckSimpleVector<set<size_t>, CppAD::vector<set<size_t>>>(CppAD::one_element_std_set<size_t>(), CppAD::two_element_std_set<size_t>());
     parallel = true;
 //    CppAD::RevSparseJacSet()
     
-    thread_group threads;
+    thread_group threads2;
     for (int i = 0; i < 2; i++) {
-        threads.create_thread(boost::bind(thread_func, i+1));
+        threads2.create_thread(boost::bind(thread_func2, i+1));
     }
-    threads.join_all();
+    threads2.join_all();
     exit(0);
 
         ptime begin, end;
 
     CppAD::vector<CppAD::AD<double>> qw(2*L*dim);
     for(int i = 0; i < 2*L*dim; i++) {
-        qw[i] = xc[i];
+        qw[i] = 1;//xc[i];
     }
     CppAD::Independent(qw);
     FG_eval fge;
