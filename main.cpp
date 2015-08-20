@@ -579,6 +579,7 @@ size_t thread_num() {
 double energyfunc(const std::vector<double>& x, std::vector<double>& grad, void* data) {
     CppAD::ADFun<double>* func = static_cast<CppAD::ADFun<double>*>(data);
     grad = func->Jacobian(x);
+    cout << func->Forward(0, x)[0] << endl;
     return func->Forward(0, x)[0];
 }
 
@@ -589,7 +590,7 @@ int main(int argc, char** argv) {
 
     cout << setprecision(16);
     
-    std::vector xc({-6.79045819393098e-9, 7.71152338744772e-9, 0.707106781186545, 0.707106781186545,
+    std::vector<double> xc({-6.79045819393098e-9, 7.71152338744772e-9, 0.707106781186545, 0.707106781186545,
         -6.63442720769046e-8, -3.48016745636222e-8, -2.45211700986609e-8, 1.9287403708982e-10,
         2.49691469412262e-13, 6.11976813244223e-14, 1.85148291581534e-9, 1.45525846918271e-9,
         -2.19595679203122e-8, -7.19724930329616e-8, 0.672114580890689, 0.740447155544597, 1.5995539027605e-7,
@@ -749,20 +750,24 @@ int main(int argc, char** argv) {
     
     int ndim = 2*L*dim;
     nlopt::opt lopt(nlopt::algorithm::LD_LBFGS, ndim);
-        lopt.set_lower_bounds(-1);
-        lopt.set_upper_bounds(1);
+        lopt.set_lower_bounds(-2);
+        lopt.set_upper_bounds(2);
         lopt.set_min_objective(energyfunc, &zx);
         lopt.set_ftol_rel(1e-16);
         lopt.set_ftol_abs(1e-16);
         
         double E0;
-        std::vector<double> x(ndim, 1);
+        std::vector<double> x(xc);//(ndim, 1);
         begin = microsec_clock::local_time();
         lopt.optimize(x, E0);
         end = microsec_clock::local_time();
         time_period period4(begin, end);
         cout << endl << period4.length() << endl << endl;
         cout << "E0 = " << E0 << endl;
+        for (int i = 0; i < ndim; i++) {
+        cout << x[i] << " ";
+        }
+        cout << endl;
 
     exit(0);
 
