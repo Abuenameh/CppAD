@@ -756,10 +756,11 @@ int main(int argc, char** argv) {
         begin = microsec_clock::local_time();
 //    fge(as, qw);
         as[0] = energy(qw);
+    CppAD::ADFun<double> zx(qw,as);
+    zx.optimize();
         end = microsec_clock::local_time();
         time_period period1(begin, end);
         cout << endl << period1.length() << endl << endl;
-    CppAD::ADFun<double> zx(qw,as);
     
     int ndim = 2*L*dim;
     nlopt::opt lopt(nlopt::algorithm::LD_LBFGS, ndim);
@@ -777,10 +778,10 @@ int main(int argc, char** argv) {
         time_period period4(begin, end);
         cout << endl << period4.length() << endl << endl;
         cout << "E0 = " << E0 << endl;
-        for (int i = 0; i < ndim; i++) {
-        cout << x[i] << " ";
-        }
-        cout << endl;
+//        for (int i = 0; i < ndim; i++) {
+//        cout << x[i] << " ";
+//        }
+//        cout << endl;
 
     exit(0);
 
