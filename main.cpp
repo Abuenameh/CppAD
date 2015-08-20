@@ -26,7 +26,7 @@ using CppAD::AD;
 
 typedef CppAD::AD<double> Scalar;
 
-const int L = 50;
+const int L = 25;
 const int nmax = 5;
 const int dim = nmax + 1;
 
