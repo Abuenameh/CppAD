@@ -19,6 +19,7 @@ using namespace boost::posix_time;
 //#include <cppad/cg/cppadcg.hpp>
 #include <cppad/cppad.hpp>
 #include <cppad/ipopt/solve.hpp>
+#include <cppad/local/ad_fun.hpp>
 //#include <cppad/ipopt/solve_callback.hpp>
 //using namespace CppAD;
 using CppAD::AD;
@@ -435,12 +436,12 @@ AD<double> energy(/*int i, int n,*/ vector<AD<double>>& fin) {//, vector<SX>& J,
         }
     }
 
-//    Ei /= norm2[i];
-//    Ej1 /= norm2[i] * norm2[j1];
-//    Ej2 /= norm2[i] * norm2[j2];
-//    Ej1j2 /= norm2[i] * norm2[j1] * norm2[j2];
-//    Ej1k1 /= norm2[i] * norm2[j1] * norm2[k1];
-//    Ej2k2 /= norm2[i] * norm2[j2] * norm2[k2];
+    Ei /= norm2[i];
+    Ej1 /= norm2[i] * norm2[j1];
+    Ej2 /= norm2[i] * norm2[j2];
+    Ej1j2 /= norm2[i] * norm2[j1] * norm2[j2];
+    Ej1k1 /= norm2[i] * norm2[j1] * norm2[k1];
+    Ej2k2 /= norm2[i] * norm2[j2] * norm2[k2];
 
     E += Ei;
     E += Ej1;
@@ -469,7 +470,7 @@ typedef CppAD::AD<complex<double>> ADc;
         cout << endl << period.length() << endl << endl;
             for(int i = 0; i < L; i++)
             {
-                fg[i+1] = norm(i, const_cast<ADvector&>(x));
+//                fg[i+1] = norm(i, const_cast<ADvector&>(x));
             }
 		}
 	};
@@ -487,10 +488,10 @@ int main(int argc, char** argv) {
 	// number of independent variables (domain dimension for f and g)
 	size_t nx = 2*L*dim;  
 	// number of constraints (range dimension for g)
-	size_t ng = L;
+	size_t ng = 0;//L;
 	// initial value of the independent variables
-//	Dvector xi(nx, 1.0);
-    Dvector xi({-6.79045819393098e-9,7.71152338744772e-9,0.707106781186545,0.707106781186545,
+	Dvector xi(nx, 1.0);
+    Dvector xii({-6.79045819393098e-9,7.71152338744772e-9,0.707106781186545,0.707106781186545,
    -6.63442720769046e-8,-3.48016745636222e-8,-2.45211700986609e-8,1.9287403708982e-10,
    2.49691469412262e-13,6.11976813244223e-14,1.85148291581534e-9,1.45525846918271e-9,
    -2.19595679203122e-8,-7.19724930329616e-8,0.672114580890689,0.740447155544597,1.5995539027605e-7,
@@ -714,6 +715,27 @@ int main(int argc, char** argv) {
 
 	// object that computes objective and constraints
 	FG_eval fg_eval;
+//    ADvector zxc(2*L*dim, 1);
+//    Independent(zxc);
+//    ADvector qwe(L+1);
+//    fg_eval(qwe, zxc);
+////    AD<double> asd = qwe[0];
+//    ADvector asd({qwe[0]});
+//    ADFun<double> fun(zxc, asd);
+//    Dvector zxc2(2*L*dim, 1);
+//    Dvector hess(2*L*dim*2*L*dim);
+//    cout << "About to Hessian" << endl;
+//    hess = fun.Hessian(zxc2, 0);
+//    cout << "Hessianed" << endl;
+//    int count = 0;
+//    for(int i = 0; i < 2*L*dim*2*L*dim; i++) {
+////        cout << jac[i] << " ";
+//        if(NearEqual(0., hess[i], 1e-10, 1e-10)) {
+//            count++;
+//        }
+//    }
+//    cout << "Zero count: " << count << endl;
+//    exit(0);
 
 //	// number of independent variables (domain dimension for f and g)
 //	size_t nx = 4;  
@@ -761,6 +783,7 @@ int main(int argc, char** argv) {
 //    options += "String hessian_approximation exact\n";
     
     options += "String linear_solver ma97\n";
+    options += "Sparse true reverse\n";
 
 	// place to return solution
 	CppAD::ipopt::solve_result<Dvector> solution;
@@ -795,8 +818,8 @@ int main(int argc, char** argv) {
         }
     }
     ADvector fg(L+1);
-    fg_eval(fg, xnorm);
-    cout << fg[0] << endl;
+//    fg_eval(fg, xnorm);
+//    cout << fg[0] << endl;
     for(int i = 0; i < L; i++) {
 //        cout << norm(i, xnorm) << endl;
     }
