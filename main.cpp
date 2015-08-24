@@ -570,8 +570,8 @@ void thread_func(int i) {
     // approximate accuracy in first order necessary conditions;
     // see Mathematical Programming, Volume 106, Number 1, 
     // Pages 25-57, Equation (6)
-    options += "Numeric tol          1e-14\n";
-    options += "Numeric acceptable_tol          1e-14\n";
+    options += "Numeric tol          1e-15\n";
+    options += "Numeric acceptable_tol          1e-15\n";
     // derivative testing
     //	options += "String  derivative_test            second-order\n";
     // maximum amount of random pertubation; e.g., 
