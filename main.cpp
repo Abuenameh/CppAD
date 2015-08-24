@@ -32,6 +32,8 @@ typedef CppAD::AD<double> Scalar;
 
 #include <nlopt.hpp>
 
+#include <lbfgs.h>
+
 const int L = 50;
 const int nmax = 5;
 const int dim = nmax + 1;
@@ -142,7 +144,7 @@ T energy(/*int i, int n,*/ CppAD::vector<T>& fin) {//, vector<SX>& J, SX& U0, ve
     double U0 = 1;
     //    vector<double> dU(L, 0);//.01);
     //    double mu = 0.5;
-    double theta = 0;
+    double theta = 0.0;
 
     //    vector<double> dU({-0.062495818684028,-0.240152540894773,-0.245433857301291,-0.273625816197061,-0.242270144341017,-0.27259078540955,-0.20204475712817,-0.0848398286345957,0.424865322680541,-0.0971718211590916,-0.129687170384589,-0.271703531802801,0.0948468516335159,-0.117917878473979,-0.0135564488854456,0.419054844730518,-0.108478764896881,-0.216038019921792,0.260931974004009,-0.202439024332201,0.187098382438594,-0.183422731248427,-0.146060037885631,-0.156016398905386,-0.183701971564288});
     //    vector<double> J({0.138152396495495,0.140219774273089,0.140581397909088,0.140546956950688,0.140535853601678,0.140093899853519,0.138001669064538,0.129914946537351,0.13004950249811,0.137341045165717,0.139269569050823,0.136554490078846,0.134896150878805,0.136228606430583,0.129211199655538,0.130262768487484,0.138427531129939,0.133745485153161,0.13360220926095,0.134615642880126,0.134412331368716,0.138498071670926,0.138193037947643,0.138613245204837,0.137539881531959});
@@ -183,32 +185,32 @@ T energy(/*int i, int n,*/ CppAD::vector<T>& fin) {//, vector<SX>& J, SX& U0, ve
         0.0189093575813226, 0.0171830354126276, 0.0164309269687668, 0.0199880266581662, 0.0174175184250734,
         0.0178953155275678, 0.0202658069422593, 0.0157860325229642, 0.017509454115344, 0.021035343501827,
         0.0243318084090072, 0.0217241042749188, 0.0188015915058845, 0.0191413581434165, 0.0197656098417165});
-        vector<double> dU({0.01527653360715675,0.028040452731736387,0.058583684775363354,0.08332774345122096,
-   0.03078431343204735,0.08552268797903828,0.014090575341526357,0.08381363936925768,
-   -0.026304755414706227,0.03638295089395238,0.04216087047377104,-0.040994762262186346,
-   -0.02128307413969932,-0.07629025359236785,0.0906120165185258,-0.19404972947825172,
-   0.0998732156883202,-0.08711338671877722,-0.04135612963156665,-0.007389305842687044,
-   0.07414829208416762,0.07786277317329993,0.009186868613194177,-0.0066126757853570695,
-   0.020968948163267553,-0.03778512194661787,0.09522832329202902,0.08197596554965991,
-   -0.186259317265293,-0.05960943246390238,-0.17761991088958562,0.04273678828086558,
-   -0.21432251882227416,-0.04726131941794409,0.08139621258205176,0.09911976916138232,
-   0.07158121608042456,-0.14992398114706718,0.08739303891472483,0.08740448877514528,
-   0.10154214583030075,-0.008758638701555466,0.07552015686706337,0.07583998119624535,
-   -0.01290207868703841,0.006553865668433856,0.07203596891022945,0.05026011465624358,
-   -0.1612474545497835,0.05977869637077382});
-   vector<double> J({0.027797040019303925,0.0292070691818018,0.03131917566583317,0.030311731586376327,
-   0.030415431225832686,0.02987172236314396,0.029792169698491203,0.028603424240024985,
-   0.026903714832365686,0.028902190149484155,0.026702856850502475,0.02497841039364602,
-   0.02416838460730489,0.027588638497227893,0.024813560807975258,0.025237005837267283,
-   0.027782605508511776,0.023471296577034985,0.025315803522694885,0.028730860683139153,
-   0.03171233001052519,0.02937673411895626,0.026635608818087485,0.02696950855370284,
-   0.026159649674662624,0.028832632795697175,0.03298479653930298,0.024645800927185022,
-   0.0211044121696826,0.021268309772611103,0.023598407482362513,0.022833498786303676,
-   0.020818730233502742,0.02793240709367753,0.03319907218884112,0.03273450875149169,
-   0.025081937906333607,0.025676447504988792,0.032823287602488024,0.03367559396199032,
-   0.030026908717810632,0.028747138075635965,0.031681527675957076,0.028641710151934858,
-   0.026396624902676868,0.02905605345385573,0.03049588149608874,0.024160481415805755,
-   0.024445949632890807,0.028851584260528286});
+    vector<double> dU({0.01527653360715675, 0.028040452731736387, 0.058583684775363354, 0.08332774345122096,
+        0.03078431343204735, 0.08552268797903828, 0.014090575341526357, 0.08381363936925768,
+        -0.026304755414706227, 0.03638295089395238, 0.04216087047377104, -0.040994762262186346,
+        -0.02128307413969932, -0.07629025359236785, 0.0906120165185258, -0.19404972947825172,
+        0.0998732156883202, -0.08711338671877722, -0.04135612963156665, -0.007389305842687044,
+        0.07414829208416762, 0.07786277317329993, 0.009186868613194177, -0.0066126757853570695,
+        0.020968948163267553, -0.03778512194661787, 0.09522832329202902, 0.08197596554965991,
+        -0.186259317265293, -0.05960943246390238, -0.17761991088958562, 0.04273678828086558,
+        -0.21432251882227416, -0.04726131941794409, 0.08139621258205176, 0.09911976916138232,
+        0.07158121608042456, -0.14992398114706718, 0.08739303891472483, 0.08740448877514528,
+        0.10154214583030075, -0.008758638701555466, 0.07552015686706337, 0.07583998119624535,
+        -0.01290207868703841, 0.006553865668433856, 0.07203596891022945, 0.05026011465624358,
+        -0.1612474545497835, 0.05977869637077382});
+    vector<double> J({0.027797040019303925, 0.0292070691818018, 0.03131917566583317, 0.030311731586376327,
+        0.030415431225832686, 0.02987172236314396, 0.029792169698491203, 0.028603424240024985,
+        0.026903714832365686, 0.028902190149484155, 0.026702856850502475, 0.02497841039364602,
+        0.02416838460730489, 0.027588638497227893, 0.024813560807975258, 0.025237005837267283,
+        0.027782605508511776, 0.023471296577034985, 0.025315803522694885, 0.028730860683139153,
+        0.03171233001052519, 0.02937673411895626, 0.026635608818087485, 0.02696950855370284,
+        0.026159649674662624, 0.028832632795697175, 0.03298479653930298, 0.024645800927185022,
+        0.0211044121696826, 0.021268309772611103, 0.023598407482362513, 0.022833498786303676,
+        0.020818730233502742, 0.02793240709367753, 0.03319907218884112, 0.03273450875149169,
+        0.025081937906333607, 0.025676447504988792, 0.032823287602488024, 0.03367559396199032,
+        0.030026908717810632, 0.028747138075635965, 0.031681527675957076, 0.028641710151934858,
+        0.026396624902676868, 0.02905605345385573, 0.03049588149608874, 0.024160481415805755,
+        0.024445949632890807, 0.028851584260528286});
 
     complex<T> expth = complex<T>(cos(theta), sin(theta));
     complex<T> expmth = ~expth;
@@ -538,7 +540,7 @@ void thread_func(int i) {
     // number of constraints (range dimension for g)
     size_t ng = 0; //L;
     // initial value of the independent variables
-//    Dvector xi(nx, 1.0);
+    //    Dvector xi(nx, 1.0);
     Dvector xi(nx);
     for (int i = 0; i < nx; i++) {
         xi[i] = 1.0;
@@ -605,53 +607,78 @@ size_t thread_num() {
 }
 
 double energyfunc(const std::vector<double>& x, std::vector<double>& grad, void* data) {
-    CppAD::ADFun<double>* func = static_cast<CppAD::ADFun<double>*>(data);
+    CppAD::ADFun<double>* func = static_cast<CppAD::ADFun<double>*> (data);
     CppAD::vector<double> cppx(x.size());
     for (int i = 0; i < x.size(); i++) {
         cppx[i] = x[i];
     }
     CppAD::vector<double> cppgrad = func->Jacobian(cppx);
-    copy(cppgrad.data(), cppgrad.data()+grad.size(), grad.begin());
+    copy(cppgrad.data(), cppgrad.data() + grad.size(), grad.begin());
     cout << func->Forward(0, cppx)[0] << endl;
     return func->Forward(0, cppx)[0];
 }
 
 void thread_func2(int i) {
     tls.reset(new thread_id(i));
-        ptime begin, end;
+    ptime begin, end;
 
-    CppAD::vector<CppAD::AD<double>> qw(2*L*dim);
-    for(int i = 0; i < 2*L*dim; i++) {
+    CppAD::vector<CppAD::AD<double>> qw(2 * L * dim);
+    for (int i = 0; i < 2 * L * dim; i++) {
         qw[i] = 1;
     }
     CppAD::Independent(qw);
     FG_eval fge;
     CppAD::vector<CppAD::AD<double>> as(1);
-        begin = microsec_clock::local_time();
-//    fge(as, qw);
-        as[0] = energy(qw);
-    CppAD::ADFun<double> zx(qw,as);
+    begin = microsec_clock::local_time();
+    //    fge(as, qw);
+    as[0] = energy(qw);
+    CppAD::ADFun<double> zx(qw, as);
     zx.optimize();
-        end = microsec_clock::local_time();
-        time_period period1(begin, end);
-        cout << endl << period1.length() << endl << endl;
-    
-    int ndim = 2*L*dim;
+    end = microsec_clock::local_time();
+    time_period period1(begin, end);
+    cout << endl << period1.length() << endl << endl;
+
+    int ndim = 2 * L*dim;
     nlopt::opt lopt(nlopt::algorithm::LD_LBFGS, ndim);
-        lopt.set_lower_bounds(-2);
-        lopt.set_upper_bounds(2);
-        lopt.set_min_objective(energyfunc, &zx);
-        lopt.set_ftol_rel(1e-16);
-        lopt.set_ftol_abs(1e-16);
-        
-        double E0;
-        std::vector<double> x(ndim, 1);
-        begin = microsec_clock::local_time();
-        lopt.optimize(x, E0);
-        end = microsec_clock::local_time();
-        time_period period4(begin, end);
-        cout << endl << period4.length() << endl << endl;
-        cout << "E0(" << i << ") = " << E0 << endl;
+    lopt.set_lower_bounds(-2);
+    lopt.set_upper_bounds(2);
+    lopt.set_min_objective(energyfunc, &zx);
+    lopt.set_ftol_rel(1e-16);
+    lopt.set_ftol_abs(1e-16);
+
+    double E0;
+    std::vector<double> x(ndim, 1);
+    begin = microsec_clock::local_time();
+    lopt.optimize(x, E0);
+    end = microsec_clock::local_time();
+    time_period period4(begin, end);
+    cout << endl << period4.length() << endl << endl;
+    cout << "E0(" << i << ") = " << E0 << endl;
+}
+
+int roundUp(int numToRound, int multiple) {
+    if (multiple == 0) {
+        return numToRound;
+    }
+
+    int remainder = numToRound % multiple;
+    if (remainder == 0)
+        return numToRound;
+    return numToRound + multiple - remainder;
+}
+
+lbfgsfloatval_t lbfgs_eval(void *instance, const lbfgsfloatval_t *x, lbfgsfloatval_t *g, const int n, const lbfgsfloatval_t step) {
+    int nx = roundUp(2 * L*dim, 16);
+    CppAD::ADFun<double>* func = static_cast<CppAD::ADFun<double>*> (instance);
+    CppAD::vector<double> cppx(2 * L * dim);
+    for (int i = 0; i < 2 * L * dim; i++) {
+        cppx[i] = x[i];
+    }
+    CppAD::vector<double> cppgrad = func->Jacobian(cppx);
+    fill(g, g + nx, 0);
+    copy(cppgrad.data(), cppgrad.data() + 2 * L*dim, g);
+    return func->Forward(0, cppx)[0];
+
 }
 
 /*
@@ -661,6 +688,37 @@ int main(int argc, char** argv) {
 
     cout << setprecision(16);
     
+    CppAD::vector<CppAD::AD<double>> qw(2*L*dim);
+    for(int i = 0; i < 2*L*dim; i++) {
+        qw[i] = 1;//xc[i];
+    }
+    CppAD::Independent(qw);
+    CppAD::vector<CppAD::AD<double>> as(1);
+        as[0] = energy(qw);
+    CppAD::ADFun<double> zx(qw,as);
+    zx.optimize();
+
+    int rnx = roundUp(2 * L*dim, 16);
+    lbfgsfloatval_t *lx = lbfgs_malloc(rnx);
+    lbfgs_parameter_t param;
+    for(int i = 0; i < 2*L*dim; i++) {
+        lx[i] = 1;
+    }
+    for(int i = 2*L*dim; i < rnx; i++) {
+        lx[i] = 0;
+    }
+    lbfgs_parameter_init(&param);
+    param.epsilon = 1e-7;
+    lbfgsfloatval_t fx;
+    int ret = lbfgs(rnx, lx, &fx, lbfgs_eval, NULL, &zx, &param);
+    for(int i = 0; i < 2*L*dim; i++) {
+        cout << lexical_cast<string>(lx[i]) << endl;
+    }
+    cout << lexical_cast<string>(fx) << endl;
+    cout << "ret = " << ret << endl;
+    lbfgs_free(lx);
+    exit(0);
+
     /*std::vector<double> fin(2*L*dim, 0);
     for(int i = 0; i < L; i++) {
         fin[2*i*dim+2] = 1;
@@ -820,7 +878,7 @@ int main(int argc, char** argv) {
    double E0 = energy(finad);
    cout << lexical_cast<std::string>(E0) << endl;
    exit(0);*/
-    
+
     /*tls.reset(new thread_id(0));
     thread_alloc::parallel_setup(3, in_parallel, thread_num);
     thread_alloc::hold_memory(true);
@@ -893,19 +951,19 @@ int main(int argc, char** argv) {
         time_period period3(begin, end);
         cout << endl << period3.length() << endl << endl;
     exit(0);*/
-    
+
     tls.reset(new thread_id(0));
     thread_alloc::parallel_setup(3, in_parallel, thread_num);
     thread_alloc::hold_memory(true);
     CppAD::parallel_ad<double>();
-    CppAD::CheckSimpleVector<size_t, CppAD::vector<size_t>>();
-    CppAD::CheckSimpleVector<set<size_t>, CppAD::vector<set<size_t>>>(CppAD::one_element_std_set<size_t>(), CppAD::two_element_std_set<size_t>());
+    CppAD::CheckSimpleVector<size_t, CppAD::vector < size_t >> ();
+    CppAD::CheckSimpleVector<set<size_t>, CppAD::vector<set < size_t>>>(CppAD::one_element_std_set<size_t>(), CppAD::two_element_std_set<size_t>());
     parallel = true;
-//    CppAD::RevSparseJacSet()
-    
+    //    CppAD::RevSparseJacSet()
+
     thread_group threads;
     for (int i = 0; i < 1; i++) {
-        threads.create_thread(boost::bind(thread_func, i+1));
+        threads.create_thread(boost::bind(thread_func, i + 1));
     }
     threads.join_all();
     exit(0);
