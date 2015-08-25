@@ -144,7 +144,7 @@ T energy(/*int i, int n,*/ CppAD::vector<T>& fin) {//, vector<SX>& J, SX& U0, ve
     double U0 = 1;
     //    vector<double> dU(L, 0);//.01);
     //    double mu = 0.5;
-    double theta = 0.0;
+    double theta = 0.01;
 
     //    vector<double> dU({-0.062495818684028,-0.240152540894773,-0.245433857301291,-0.273625816197061,-0.242270144341017,-0.27259078540955,-0.20204475712817,-0.0848398286345957,0.424865322680541,-0.0971718211590916,-0.129687170384589,-0.271703531802801,0.0948468516335159,-0.117917878473979,-0.0135564488854456,0.419054844730518,-0.108478764896881,-0.216038019921792,0.260931974004009,-0.202439024332201,0.187098382438594,-0.183422731248427,-0.146060037885631,-0.156016398905386,-0.183701971564288});
     //    vector<double> J({0.138152396495495,0.140219774273089,0.140581397909088,0.140546956950688,0.140535853601678,0.140093899853519,0.138001669064538,0.129914946537351,0.13004950249811,0.137341045165717,0.139269569050823,0.136554490078846,0.134896150878805,0.136228606430583,0.129211199655538,0.130262768487484,0.138427531129939,0.133745485153161,0.13360220926095,0.134615642880126,0.134412331368716,0.138498071670926,0.138193037947643,0.138613245204837,0.137539881531959});
@@ -668,14 +668,14 @@ int roundUp(int numToRound, int multiple) {
 }
 
 lbfgsfloatval_t lbfgs_eval(void *instance, const lbfgsfloatval_t *x, lbfgsfloatval_t *g, const int n, const lbfgsfloatval_t step) {
-    int nx = roundUp(2 * L*dim, 16);
+//    int nx = roundUp(2 * L*dim, 16);
     CppAD::ADFun<double>* func = static_cast<CppAD::ADFun<double>*> (instance);
     CppAD::vector<double> cppx(2 * L * dim);
     for (int i = 0; i < 2 * L * dim; i++) {
         cppx[i] = x[i];
     }
     CppAD::vector<double> cppgrad = func->Jacobian(cppx);
-    fill(g, g + nx, 0);
+//    fill(g, g + nx, 0);
     copy(cppgrad.data(), cppgrad.data() + 2 * L*dim, g);
     return func->Forward(0, cppx)[0];
 
@@ -698,21 +698,35 @@ int main(int argc, char** argv) {
     CppAD::ADFun<double> zx(qw,as);
     zx.optimize();
 
-    int rnx = roundUp(2 * L*dim, 16);
+    int rnx = 2*L*dim;//roundUp(2 * L*dim, 16);
     lbfgsfloatval_t *lx = lbfgs_malloc(rnx);
     lbfgs_parameter_t param;
     for(int i = 0; i < 2*L*dim; i++) {
         lx[i] = 1;
     }
-    for(int i = 2*L*dim; i < rnx; i++) {
-        lx[i] = 0;
-    }
+//    for(int i = 2*L*dim; i < rnx; i++) {
+//        lx[i] = 0;
+//    }
     lbfgs_parameter_init(&param);
-    param.epsilon = 1e-7;
+    param.linesearch = LBFGS_LINESEARCH_BACKTRACKING_ARMIJO;
+    param.epsilon = 1e-12;
     lbfgsfloatval_t fx;
     int ret = lbfgs(rnx, lx, &fx, lbfgs_eval, NULL, &zx, &param);
+    std::vector<double> xv(2*L*dim);
+    copy(lx, lx+2*L*dim, xv.data());
+    std::vector<double> xvnorms(L);
+    for (int i = 0; i < L; i++) {
+        xvnorms[i] = abs(i, xv);
+    }
+    std::vector<double> xvnorm(2 * L * dim);
+    for (int i = 0; i < L; i++) {
+        for (int n = 0; n <= nmax; n++) {
+            xvnorm[2 * (i * dim + n)] = xv[2 * (i * dim + n)] / xvnorms[i];
+            xvnorm[2 * (i * dim + n) + 1] = xv[2 * (i * dim + n) + 1] / xvnorms[i];
+        }
+    }
     for(int i = 0; i < 2*L*dim; i++) {
-        cout << lexical_cast<string>(lx[i]) << endl;
+        cout << lexical_cast<string>(xvnorm[i]) << endl;
     }
     cout << lexical_cast<string>(fx) << endl;
     cout << "ret = " << ret << endl;
