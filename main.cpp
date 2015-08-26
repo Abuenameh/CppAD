@@ -536,7 +536,7 @@ void thread_func(int i) {
         options += "String hessian_approximation limited-memory\n";
     //    options += "String hessian_approximation exact\n";
 
-    options += "String linear_solver ma77\n";
+    options += "String linear_solver ma86\n";
     options += "Sparse true reverse\n";
 
     // place to return solution
@@ -811,7 +811,7 @@ int main(int argc, char** argv) {
     //    CppAD::RevSparseJacSet()
 
     thread_group threads;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 2; i++) {
         threads.create_thread(boost::bind(thread_func, i + 1));
     }
     threads.join_all();
