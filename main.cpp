@@ -154,6 +154,9 @@ T energy(CppAD::vector<T>& fin, double theta) {//, vector<SX>& J, SX& U0, vector
    0.12603768848181313,0.13091827337328235,0.13089531847335406,0.13156503748608092,
    0.13235750524257245,0.13115442677484687,0.12330045468272256,0.11808781795079101,
    0.12625571469480604,0.12931016581648044});
+   for (int i = 0; i < L; i++) {
+//       J[i] *= 5;
+   }
         double mu = 0.3;
 
     complex<T> expth = complex<T>(cos(theta), sin(theta));
@@ -461,7 +464,7 @@ public:
         ptime begin = microsec_clock::local_time();
 //        cout << x << endl;
         fg[0] = energy(const_cast<ADvector&> (x), theta);
-        cout << fg[0] << endl;
+//        cout << fg[0] << endl;
         ptime end = microsec_clock::local_time();
         time_period period(begin, end);
 //        cout << endl << period.length() << endl << endl;
@@ -518,22 +521,22 @@ void thread_func(int i) {
     	options += "Integer print_level  0\n"; 
     options += "String  sb           yes\n";
     // maximum number of iterations
-    options += "Integer max_iter     1000\n";
+    options += "Integer max_iter     2000\n";
     // approximate accuracy in first order necessary conditions;
     // see Mathematical Programming, Volume 106, Number 1, 
     // Pages 25-57, Equation (6)
-    options += "Numeric tol          1e-10\n";
-    options += "Numeric acceptable_tol          1e-10\n";
+    options += "Numeric tol          1e-12\n";
+    options += "Numeric acceptable_tol          1e-12\n";
     // derivative testing
-    //	options += "String  derivative_test            second-order\n";
+//    	options += "String  derivative_test            second-order\n";
     // maximum amount of random pertubation; e.g., 
     // when evaluation finite diff
-    options += "Numeric point_perturbation_radius  0.\n";
+//    options += "Numeric point_perturbation_radius  0.\n";
 
-    //    options += "String hessian_approximation limited-memory\n";
+        options += "String hessian_approximation limited-memory\n";
     //    options += "String hessian_approximation exact\n";
 
-    options += "String linear_solver ma97\n";
+    options += "String linear_solver ma77\n";
     options += "Sparse true reverse\n";
 
     // place to return solution
@@ -548,6 +551,17 @@ void thread_func(int i) {
             xl, xu, gl, gu, fg_eval0, solution
             );
 
+//    Dvector norms(L);
+//    for (int i = 0; i < L; i++) {
+//        norms[i] = abs(i, solution.x);
+//    }
+//    Dvector xnorm(2 * L * dim);
+//    for (int i = 0; i < L; i++) {
+//        for (int n = 0; n <= nmax; n++) {
+//            xnorm[2 * (i * dim + n)] = solution.x[2 * (i * dim + n)] / norms[i];
+//            xnorm[2 * (i * dim + n) + 1] = solution.x[2 * (i * dim + n) + 1] / norms[i];
+//        }
+//    }
     cout << solution.status << endl;
     cout << "E0 = " << lexical_cast<string>(solution.obj_value) << endl;
 
