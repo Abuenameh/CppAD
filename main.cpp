@@ -34,7 +34,7 @@ typedef CppAD::AD<double> Scalar;
 
 #include <lbfgs.h>
 
-const int L = 50;
+const int L = 25;
 const int nmax = 5;
 const int dim = nmax + 1;
 
@@ -523,8 +523,8 @@ void thread_func(int i) {
     // approximate accuracy in first order necessary conditions;
     // see Mathematical Programming, Volume 106, Number 1, 
     // Pages 25-57, Equation (6)
-    options += "Numeric tol          1e-15\n";
-    options += "Numeric acceptable_tol          1e-15\n";
+    options += "Numeric tol          1e-10\n";
+    options += "Numeric acceptable_tol          1e-10\n";
     // derivative testing
     //	options += "String  derivative_test            second-order\n";
     // maximum amount of random pertubation; e.g., 
@@ -549,17 +549,22 @@ void thread_func(int i) {
             xl, xu, gl, gu, fg_eval0, solution
             );
 
+    cout << solution.status << endl;
     cout << "E0 = " << lexical_cast<string>(solution.obj_value) << endl;
 
     // object that computes objective and constraints
     FG_eval fg_evalth(0.01);
 
+    for (int i = 0; i < nx; i++) {
+        xi[i] = 1.0;
+    }
     // solve the problem
     CppAD::ipopt::solve<Dvector, FG_eval>(
             options, xi,
             xl, xu, gl, gu, fg_evalth, solution
             );
 
+    cout << solution.status << endl;
     cout << "Eth = " << lexical_cast<string>(solution.obj_value) << endl;
 }
 
