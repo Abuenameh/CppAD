@@ -501,6 +501,74 @@ public:
 
 boost::thread_specific_ptr<thread_id> tls;
 
+void thread_func(int i, double theta) {
+    tls.reset(new thread_id(i));
+
+    typedef CppAD::vector<CppAD::AD<double>> ADvector;
+    typedef CppAD::vector<double> Dvector;
+
+    // number of independent variables (domain dimension for f and g)
+    size_t nx = 2 * L*dim;
+    // number of constraints (range dimension for g)
+    size_t ng = 0; //L;
+    // initial value of the independent variables
+    //    Dvector xi(nx, 1.0);
+    Dvector xi(nx);
+    for (int i = 0; i < nx; i++) {
+        xi[i] = 1.0;
+    }
+    Dvector xl(nx), xu(nx);
+    for (int i = 0; i < nx; i++) {
+        xl[i] = -2.0;
+        xu[i] = 2.0;
+    }
+    // lower and upper limits for g
+    Dvector gl(ng), gu(ng);
+    for (int i = 0; i < ng; i++) {
+        gl[i] = 1.0;
+        gu[i] = 1.0;
+    }
+
+    // options 
+    std::string options;
+    // turn off any printing
+    	options += "Integer print_level  0\n"; 
+    options += "String  sb           yes\n";
+    // maximum number of iterations
+    options += "Integer max_iter     4000\n";
+    // approximate accuracy in first order necessary conditions;
+    // see Mathematical Programming, Volume 106, Number 1, 
+    // Pages 25-57, Equation (6)
+    options += "Numeric tol          1e-12\n";
+    options += "Numeric acceptable_tol          1e-12\n";
+    // derivative testing
+//    	options += "String  derivative_test            second-order\n";
+    // maximum amount of random pertubation; e.g., 
+    // when evaluation finite diff
+//    options += "Numeric point_perturbation_radius  0.\n";
+
+//        options += "String hessian_approximation limited-memory\n";
+    //    options += "String hessian_approximation exact\n";
+
+    options += "String linear_solver ma86\n";
+    options += "Sparse true reverse\n";
+
+    // place to return solution
+    CppAD::ipopt::solve_result<Dvector> solution;
+
+    // object that computes objective and constraints
+    FG_eval fg_eval(theta);
+
+    // solve the problem
+    CppAD::ipopt::solve<Dvector, FG_eval>(
+            options, xi,
+            xl, xu, gl, gu, fg_eval, solution
+            );
+
+    cout << solution.status << endl;
+    cout << "E(" << theta << ") = " << lexical_cast<string>(solution.obj_value) << endl;
+}
+
 void thread_func(int i) {
     tls.reset(new thread_id(i));
 
@@ -825,9 +893,11 @@ int main(int argc, char** argv) {
     //    CppAD::RevSparseJacSet()
 
     thread_group threads;
-    for (int i = 0; i < 2; i++) {
-        threads.create_thread(boost::bind(thread_func, i + 1));
+    for (int i = 0; i < 1; i++) {
+//        threads.create_thread(boost::bind(thread_func, i + 1));
     }
+        threads.create_thread(boost::bind(thread_func, 1, 0));
+        threads.create_thread(boost::bind(thread_func, 2, 0.01));
     threads.join_all();
     exit(0);
 
